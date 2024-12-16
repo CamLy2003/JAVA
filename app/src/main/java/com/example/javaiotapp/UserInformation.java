@@ -5,6 +5,7 @@ public class UserInformation {
     private  String date_of_birth;
     private  String address;
     private  String phone_number;
+    private  Gender sex;
 
     public String getAddress() {
         return address;
@@ -22,6 +23,10 @@ public class UserInformation {
         return phone_number;
     }
 
+    public Gender getSex() {
+        return sex;
+    }
+
     public void setAddress(String address) {
         this.address = address;
     }
@@ -36,5 +41,9 @@ public class UserInformation {
 
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
+    }
+
+    public void setSex(Gender sex) {
+        this.sex = sex;
     }
 }

@@ -1,37 +1,50 @@
 package com.example.javaiotapp;
 
-import android.icu.text.Edits;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.os.Bundle;
 
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AccountFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class AccountFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+public class AccountFragment extends Fragment {
+    List<UserInfo> userList;
+    UserInfoAdapter adapter;
+
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -39,15 +52,6 @@ public class AccountFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AccountFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static AccountFragment newInstance(String param1, String param2) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
@@ -64,47 +68,138 @@ public class AccountFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        createNotificationChannel();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_account, container, false);
-        ListView list_view = (ListView) view.findViewById(R.id.listview);
 
-        String[] items_user_infor_list = {"Name", "Date of Birth","Address","Phone Number"};
+        Button logoutButton = view.findViewById(R.id.ExitButton);
+        Button changeUserInfoButton = view.findViewById(R.id.ChangeUserInfo);
 
-        UserInformation User = new UserInformation();
-        User.setName("Nguyen Dang Duy Manh");
-        User.setAddress("407 - B5");
-        User.setDate_of_birth("11 / 12 / 2003");
-        User.setPhone_number("0832073486");
 
-        User.setName("Manh Nguyen");
-        LinkedHashMap<String, String> User_map = new LinkedHashMap<>();
 
-        User_map.put(items_user_infor_list[0], User.getName());
-        User_map.put(items_user_infor_list[1], User.getDate_of_birth());
-        User_map.put(items_user_infor_list[2], User.getAddress());
-        User_map.put(items_user_infor_list[3], User.getPhone_number());
+        changeUserInfoButton.setOnClickListener(v -> {
+            changeUserInformation();
+        });
+        logoutButton.setOnClickListener(v -> showNotification());
 
-        List<HashMap<String, String>> User_List = new ArrayList<>();
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        SimpleAdapter user_adapter = new SimpleAdapter(this.getContext(), User_List, R.layout.display_user_information_list,
-                new String[]{"First line", "Second line"},
-                new int[]{R.id.User_infor_list1, R.id.User_infor_list2});
+        // Create a list of user information
+        userList = new ArrayList<>();
+        userList.add(new UserInfo("Name", "Nguyen Dang Duy Manh"));
+        userList.add(new UserInfo("Gender", "Male"));
+        userList.add(new UserInfo("Date of birth", "DEC 11 2003"));
+        userList.add(new UserInfo("Address", "407 - B5"));
+        userList.add(new UserInfo("Phone Number", "0832073486"));
 
-        Iterator it = User_map.entrySet().iterator();
+        // Set the adapter
+        adapter = new UserInfoAdapter(userList);
+        recyclerView.setAdapter(adapter);
 
-        while (it.hasNext()) {
-            HashMap<String, String> User_map_result = new HashMap<>();
-            Map.Entry pair = (Map.Entry)it.next();
-            User_map_result.put("First line", pair.getKey().toString());
-            User_map_result.put("Second line", pair.getValue().toString());
-            User_List.add(User_map_result);
-        }
-        list_view.setAdapter(user_adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
+
+        requireActivity().getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            int backStackCount = requireActivity().getSupportFragmentManager().getBackStackEntryCount();
+            Log.d("AccountFragment", "Back stack changed. Count: " + backStackCount);
+            if (backStackCount == 0) {
+                toggleContainerVisibility(
+                        requireView().findViewById(R.id.fragment_account),
+                        requireView().findViewById(R.id.fragment_account_container),
+                        false
+                );
+            }
+        });
+
         return view;
     }
+
+    public void updateUserInfo(String name, String gender, String dob, String address, String phone) {
+        // Update user list
+        TextView userName = requireView().findViewById(R.id.HelloUser);
+        userName.setText(name);
+        userName.setAllCaps(true);
+        userList.get(0).setValue(name); // Assuming Name is the first item
+        userList.get(1).setValue(gender);
+        userList.get(2).setValue(dob);
+        userList.get(3).setValue(address);
+        userList.get(4).setValue(phone);
+        adapter.notifyDataSetChanged(); // Notify adapter of changes
+    }
+
+    private void showNotification() {
+        Context context = requireContext();
+        Intent intent = new Intent(context, MainActivity.class); // Target activity hosting the fragment
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "my_channel_id")
+                .setSmallIcon(R.drawable.account_logout_icon)
+                .setContentTitle("Logout Notification")
+                .setContentText("You have clicked the logout button.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, builder.build());
+    }
+
+    private void createNotificationChannel() {
+        String name = "My Notification Channel";
+        String description = "Channel for app notifications";
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel channel = new NotificationChannel("my_channel_id", name, importance);
+        channel.setDescription(description);
+
+        NotificationManager notificationManager = requireContext().getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void changeUserInformation() {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        View staticContent = requireView().findViewById(R.id.fragment_account);
+        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
+
+        toggleContainerVisibility(staticContent, fragmentContainer, true);
+
+        // Use newInstance to pass user information
+        ChangeUserInformationFragment changeFragment = ChangeUserInformationFragment.newInstance(
+                userList.get(0).getValue(), // Name
+                userList.get(1).getValue(), // Gender
+                userList.get(2).getValue(), // DOB
+                userList.get(3).getValue(), // Address
+                userList.get(4).getValue()  // Phone
+        );
+
+        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
+                .addToBackStack(null) // Add to back stack
+                .commit();
+
+        Log.d("AccountFragment", "Navigated to ChangeUserInformationFragment.");
+    }
+
+
+    public void toggleContainerVisibility(View staticContent, View fragmentContainer, boolean showFragment) {
+        if (staticContent == null || fragmentContainer == null) {
+            Log.e("AccountFragment", "toggleContainerVisibility failed: Views are null!");
+            return;
+        }
+        staticContent.setVisibility(showFragment ? View.GONE : View.VISIBLE);
+        fragmentContainer.setVisibility(showFragment ? View.VISIBLE : View.GONE);
+        Log.d("AccountFragment", "Static content visibility: " + staticContent.getVisibility() +
+                ", Fragment container visibility: " + fragmentContainer.getVisibility());
+    }
+
 }
