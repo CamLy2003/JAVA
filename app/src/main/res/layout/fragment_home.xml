@@ -1,16 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".HomeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textSize="30sp"
-        android:text="Home" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="16dp">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/welcomeTxtView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+
+            android:paddingTop="20dp"
+            android:textColor="#6F37A7"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <VideoView
+            android:id="@+id/videoViewBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Project Description"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:textColor="#6F37A7"
+            android:paddingTop="20dp"/>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:src="@drawable/project_model"
+            android:contentDescription="3d model"
+            android:paddingTop="20dp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="3D Model of DUT Parking Project"
+            android:textSize="12dp"
+            android:textStyle="italic"
+            android:paddingTop="5dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:textSize="16sp"
+            android:text="@string/project_introduction"
+            android:paddingTop="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="About Us"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:textColor="#6F37A7"
+            android:paddingTop="20dp"/>
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_gravity="center"
+            android:stretchColumns="1"
+            android:paddingTop="20dp">
+
+            <TableRow>
+                <TextView
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    android:textSize="16dp"
+                    android:text="Student ID" />
+                <TextView
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    android:textSize="16dp"
+                    android:text="Name" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="21200310" />
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="Lê Ngọc Long" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="21200312" />
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="Nguyễn Đặng Duy Mạnh" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="21200328" />
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="Nguyễn Đức Phú" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="21200374" />
+                <TextView
+                    android:gravity="center"
+                    android:textSize="16dp"
+                    android:text="Mai Thị Cẩm Ly" />
+            </TableRow>
+
+        </TableLayout>
+    </LinearLayout>
+</ScrollView>

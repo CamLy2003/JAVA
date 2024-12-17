@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentAdapter = new FragmentAdapter(this);
         viewPager2.setAdapter(fragmentAdapter);
+        viewPager2.setOffscreenPageLimit(3);
 
         new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
             switch (position) {

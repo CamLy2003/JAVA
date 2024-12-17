@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">javaiotapp</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="project_introduction">
+        Within a smartphone connecting to the Internet, we can know the status
+        of the parking lot, vacant spaces and reserved spaces. Our DUT system
+        is built with STM microcontroller adapted with HC-SR04 ultrasonic sensor.
+        The data is transmitted through LoRa module and synchronized with the database.
+
+    </string>
 </resources>
