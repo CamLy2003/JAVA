@@ -66,11 +66,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
                         <ImageView
+                            android:id="@+id/account_avatar_boy"
                             android:layout_width="100dp"
                             android:layout_height="100dp"
                             android:layout_centerHorizontal="true"
                             android:layout_marginTop="20dp"
                             android:src="@drawable/account_boy_avatar" />
+
+                        <ImageView
+                            android:id="@+id/account_avatar_girl"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="20dp"
+                            android:src="@drawable/account_girl_avatar" />
+
                         <TextView
                             android:id="@+id/HelloUser"
                             android:layout_width="wrap_content"

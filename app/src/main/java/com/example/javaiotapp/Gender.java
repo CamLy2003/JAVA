@@ -1,6 +1,6 @@
 package com.example.javaiotapp;
 
 public enum Gender {
-    Male, Female;
+    Male, Female, other;
 }
 

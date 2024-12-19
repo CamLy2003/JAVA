@@ -90,15 +90,19 @@
             android:text="Gender"
             android:textColor="#8F00FF"
             android:textSize="16sp" />
-        <EditText
-            android:id="@+id/genderEditText"
+        <Button
+            android:id="@+id/GenderPickerButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_marginBottom="12dp"
-            android:backgroundTint="#8F00FF"
-            android:inputType="text"
-            android:hint="Enter Gender" />
+            android:text="GAY"
+            android:layout_marginBottom="8dp"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            style="?android:spinnerStyle"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            android:layout_marginTop="10dp"/>
 
         <!-- Date of Birth Label and Input -->
         <TextView
