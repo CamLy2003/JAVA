@@ -113,7 +113,7 @@ public class ChangeUserInformationFragment extends Fragment {
 
     private void chooseGender() {
 
-        Gender []genderOption = {Gender.Male, Gender.Female, Gender.other};
+        Gender []genderOption = {Gender.Male, Gender.Female, Gender.Other};
 
         String[] genderNames = new String[genderOption.length];
         for (int i = 0; i < genderOption.length; i++) {
@@ -173,7 +173,7 @@ public class ChangeUserInformationFragment extends Fragment {
         } else if (gender.equalsIgnoreCase("Female")) {
             return Gender.Female;
         } else {
-            return Gender.other;
+            return Gender.Other;
         }
     }
 
