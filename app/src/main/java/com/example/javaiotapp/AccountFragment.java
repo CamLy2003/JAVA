@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -40,6 +41,9 @@ import java.util.Map;
 
 public class AccountFragment extends Fragment {
     List<UserInfo> userList;
+
+    CarInformation carInfor;
+    UserInformation userInfor;
     UserInfoAdapter adapter;
 
 
@@ -78,24 +82,54 @@ public class AccountFragment extends Fragment {
 
         Button logoutButton = view.findViewById(R.id.ExitButton);
         Button changeUserInfoButton = view.findViewById(R.id.ChangeUserInfo);
-
+        Button carStatusButton  = view.findViewById(R.id.CarStatus);
 
 
         changeUserInfoButton.setOnClickListener(v -> {
             changeUserInformation();
         });
+
+        carStatusButton.setOnClickListener(v -> {
+            displayCarStatus();
+        });
+
         logoutButton.setOnClickListener(v -> showNotification());
 
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Create a list of user information
+        userInfor = new UserInformation();
+        userInfor.setName("Nguyen Dang Duy Manh");
+        userInfor.setSex(Gender.Male);
+        userInfor.setDate_of_birth("DEC 11 2003");
+        userInfor.setAddress("407 - B5");
+        userInfor.setPhone_number("0832073486");
+
+        //Create a list of car information
+        carInfor = new CarInformation();
+        carInfor.setBeginDate("JAN 1 2023");
+        carInfor.setEndDate("DEC 12 2025");
+        carInfor.setBrand("Toyota");
+        carInfor.setDescription("Car00001");
+
         userList = new ArrayList<>();
-        userList.add(new UserInfo("Name", "Nguyen Dang Duy Manh"));
-        userList.add(new UserInfo("Gender", "Male"));
-        userList.add(new UserInfo("Date of birth", "DEC 11 2003"));
-        userList.add(new UserInfo("Address", "407 - B5"));
-        userList.add(new UserInfo("Phone Number", "0832073486"));
+        userList.add(new UserInfo("Name", userInfor.getName()));
+        userList.add(new UserInfo("Gender", userInfor.getSex().toString()));
+        userList.add(new UserInfo("Date of birth", userInfor.getDate_of_birth()));
+        userList.add(new UserInfo("Address", userInfor.getAddress()));
+        userList.add(new UserInfo("Phone Number", userInfor.getPhone_number()));
+
+        String gender = userList.get(1).getValue();
+        ImageView boy_image = view.findViewById(R.id.account_avatar_boy);
+        ImageView girl_image = view.findViewById(R.id.account_avatar_girl);
+        if (gender.equalsIgnoreCase("male")) {
+            boy_image.setVisibility(View.VISIBLE);
+            girl_image.setVisibility(View.GONE);
+        } else if (gender.equalsIgnoreCase("female")) {
+            boy_image.setVisibility(View.GONE);
+            girl_image.setVisibility(View.VISIBLE);
+        }
 
         // Set the adapter
         adapter = new UserInfoAdapter(userList);
@@ -121,16 +155,32 @@ public class AccountFragment extends Fragment {
         return view;
     }
 
-    public void updateUserInfo(String name, String gender, String dob, String address, String phone) {
+    public void updateUserInfo(UserInformation userInfor) {
         // Update user list
         TextView userName = requireView().findViewById(R.id.HelloUser);
-        userName.setText(name);
+        ImageView boy_image = requireView().findViewById(R.id.account_avatar_boy);
+        ImageView girl_image = requireView().findViewById(R.id.account_avatar_girl);
+
+        // Update user infor
+        this.userInfor = userInfor;
+
+        userName.setText(userInfor.getName());
         userName.setAllCaps(true);
-        userList.get(0).setValue(name); // Assuming Name is the first item
-        userList.get(1).setValue(gender);
-        userList.get(2).setValue(dob);
-        userList.get(3).setValue(address);
-        userList.get(4).setValue(phone);
+        userList.get(0).setValue(userInfor.getName());
+        userList.get(1).setValue(userInfor.getSex().toString());
+        userList.get(2).setValue(userInfor.getDate_of_birth());
+        userList.get(3).setValue(userInfor.getAddress());
+        userList.get(4).setValue(userInfor.getPhone_number());
+
+        if (userInfor.getSex().toString().equalsIgnoreCase("male")) {
+            boy_image.setVisibility(View.VISIBLE);
+            girl_image.setVisibility(View.GONE);
+        } else if (userInfor.getSex().toString().equalsIgnoreCase("female")) {
+            boy_image.setVisibility(View.GONE);
+            girl_image.setVisibility(View.VISIBLE);
+        }
+
+
         adapter.notifyDataSetChanged(); // Notify adapter of changes
     }
 
@@ -176,11 +226,7 @@ public class AccountFragment extends Fragment {
 
         // Use newInstance to pass user information
         ChangeUserInformationFragment changeFragment = ChangeUserInformationFragment.newInstance(
-                userList.get(0).getValue(), // Name
-                userList.get(1).getValue(), // Gender
-                userList.get(2).getValue(), // DOB
-                userList.get(3).getValue(), // Address
-                userList.get(4).getValue()  // Phone
+                userInfor
         );
 
         transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
@@ -190,6 +236,26 @@ public class AccountFragment extends Fragment {
         Log.d("AccountFragment", "Navigated to ChangeUserInformationFragment.");
     }
 
+    private void displayCarStatus() {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        View staticContent = requireView().findViewById(R.id.fragment_account);
+        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
+
+        toggleContainerVisibility(staticContent, fragmentContainer, true);
+
+        CarStatusFragment changeFragment = CarStatusFragment.newInstance(
+                carInfor
+        );
+
+        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
+                .addToBackStack(null) // Add to back stack
+                .commit();
+
+        Log.d("AccountFragment", "Navigated to CarStatusFragment.");
+
+    }
 
     public void toggleContainerVisibility(View staticContent, View fragmentContainer, boolean showFragment) {
         if (staticContent == null || fragmentContainer == null) {
@@ -202,4 +268,7 @@ public class AccountFragment extends Fragment {
                 ", Fragment container visibility: " + fragmentContainer.getVisibility());
     }
 
+    public void updateCarInfo(CarInformation carInfor) {
+        this.carInfor = carInfor;
+    }
 }

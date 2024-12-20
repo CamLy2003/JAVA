@@ -2,18 +2,18 @@ package com.example.javaiotapp;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -27,21 +27,26 @@ public class ChangeUserInformationFragment extends Fragment {
 
     private DatePickerDialog datePickerDialog;
     private Button dateButton;
-    private EditText nameEditText, addressEditText, genderEditText, phoneEditText;
+
+    static private UserInformation userInfor;
+
+    private Button genderButton;
+    private EditText nameEditText, addressEditText, phoneEditText;
     private ImageButton backButton;
 
     public ChangeUserInformationFragment() {
         // Required empty public constructor
     }
 
-    public static ChangeUserInformationFragment newInstance(String name, String gender, String dob, String address, String phone) {
+    public static ChangeUserInformationFragment newInstance(UserInformation userInformation) {
         ChangeUserInformationFragment fragment = new ChangeUserInformationFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_NAME, name);
-        args.putString(ARG_GENDER, gender);
-        args.putString(ARG_DOB, dob);
-        args.putString(ARG_ADDRESS, address);
-        args.putString(ARG_PHONE, phone);
+        userInfor = userInformation;
+        args.putString(ARG_NAME, userInfor.getName());
+        args.putString(ARG_GENDER, userInfor.getSex().toString());
+        args.putString(ARG_DOB, userInfor.getDate_of_birth());
+        args.putString(ARG_ADDRESS, userInfor.getAddress());
+        args.putString(ARG_PHONE, userInfor.getPhone_number());
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,7 +60,7 @@ public class ChangeUserInformationFragment extends Fragment {
 
         // Initialize views
         nameEditText = view.findViewById(R.id.nameEditText);
-        genderEditText = view.findViewById(R.id.genderEditText);
+        genderButton = view.findViewById(R.id.GenderPickerButton);
         dateButton = view.findViewById(R.id.datePickerButton);
         addressEditText = view.findViewById(R.id.addressEditText);
         phoneEditText = view.findViewById(R.id.phoneEditText);
@@ -64,40 +69,65 @@ public class ChangeUserInformationFragment extends Fragment {
         // Set initial data if arguments are present
         if (getArguments() != null) {
             nameEditText.setText(getArguments().getString(ARG_NAME, ""));
-            genderEditText.setText(getArguments().getString(ARG_GENDER, ""));
+            genderButton.setText(getArguments().getString(ARG_GENDER, ""));
             String dob = getArguments().getString(ARG_DOB, null);
             dateButton.setText(dob != null ? dob : getTodaysDate());
             addressEditText.setText(getArguments().getString(ARG_ADDRESS, ""));
             phoneEditText.setText(getArguments().getString(ARG_PHONE, ""));
         }
 
+        genderButton.setOnClickListener(v -> chooseGender());
+
         dateButton.setOnClickListener(v -> openDatePicker(v));
 
         backButton.setOnClickListener(v -> {
-            MainActivity mainActivity = (MainActivity) requireActivity();
-            AccountFragment accountFragment = mainActivity.getAccountFragment();
+            hideKeyboard(v); // Hide the keyboard
+            if (isInputValid()) {
+                MainActivity mainActivity = (MainActivity) requireActivity();
+                AccountFragment accountFragment = mainActivity.getAccountFragment();
 
-            if (accountFragment != null) {
-                accountFragment.updateUserInfo(
-                        nameEditText.getText().toString(),
-                        genderEditText.getText().toString(),
-                        dateButton.getText().toString(),
-                        addressEditText.getText().toString(),
-                        phoneEditText.getText().toString()
-                );
-            } else {
-                Log.e("ChangeUserInfoFragment", "AccountFragment reference is null!");
+                userInfor.setName(nameEditText.getText().toString());
+                userInfor.setSex(getGender(genderButton.getText().toString()));
+                userInfor.setDate_of_birth(dateButton.getText().toString());
+                userInfor.setAddress(addressEditText.getText().toString());
+                userInfor.setPhone_number(phoneEditText.getText().toString());
+
+
+                if (accountFragment != null) {
+                    accountFragment.updateUserInfo(
+                        userInfor
+                    );
+                } else {
+                    Log.e("ChangeUserInfoFragment", "AccountFragment reference is null!");
+                }
+
+                requireActivity().getSupportFragmentManager().popBackStack();
             }
-
-            // Pop back stack only
-            requireActivity().getSupportFragmentManager().popBackStack();
-            Log.d("ChangeUserInfoFragment", "Back stack popped. Current back stack count: " +
-                    requireActivity().getSupportFragmentManager().getBackStackEntryCount());
         });
 
 
 
+
         return view;
+    }
+
+    private void chooseGender() {
+
+        Gender []genderOption = {Gender.Male, Gender.Female, Gender.Other};
+
+        String[] genderNames = new String[genderOption.length];
+        for (int i = 0; i < genderOption.length; i++) {
+            genderNames[i] = genderOption[i].toString();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Choose Gender")
+                .setItems(genderNames, (dialog, which) -> {
+                    // Set selected gender
+                    Gender option = genderOption[which];
+                    genderButton.setText(option.toString());
+                })
+                .show();
     }
 
     private String getTodaysDate()
@@ -110,34 +140,59 @@ public class ChangeUserInformationFragment extends Fragment {
         return makeDateString(day, month, year);
     }
 
-    private void initDatePicker()
-    {
-        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener()
-        {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day)
-            {
-                month = month + 1;
-                String date = makeDateString(day, month, year);
-                dateButton.setText(date);
-            }
+    private void initDatePicker() {
+        DatePickerDialog.OnDateSetListener dateSetListener = (datePicker, year, month, day) -> {
+            month = month + 1;
+            String date = makeDateString(day, month, year);
+            dateButton.setText(date);
         };
 
         Calendar cal = Calendar.getInstance();
+        String dob = getArguments() != null ? getArguments().getString(ARG_DOB, null) : null;
+        if (dob != null) {
+            // Parse the DOB to set DatePicker default values
+            String[] parts = dob.split(" ");
+            int year = Integer.parseInt(parts[2]);
+            int month = getMonthNumber(parts[0]) - 1; // Convert to zero-based
+            int day = Integer.parseInt(parts[1]);
+            cal.set(year, month, day);
+        }
+
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH);
         int day = cal.get(Calendar.DAY_OF_MONTH);
 
         int style = AlertDialog.THEME_HOLO_LIGHT;
-
         datePickerDialog = new DatePickerDialog(requireContext(), style, dateSetListener, year, month, day);
-        //datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-
     }
 
-    private String makeDateString(int day, int month, int year)
-    {
-        return getMonthFormat(month) + " " + day + " " + year;
+
+    private Gender getGender(String gender) {
+        if (gender.equalsIgnoreCase("Male")) {
+            return Gender.Male;
+        } else if (gender.equalsIgnoreCase("Female")) {
+            return Gender.Female;
+        } else {
+            return Gender.Other;
+        }
+    }
+
+    private int getMonthNumber(String month) {
+        switch (month) {
+            case "JAN": return 1;
+            case "FEB": return 2;
+            case "MAR": return 3;
+            case "APR": return 4;
+            case "MAY": return 5;
+            case "JUN": return 6;
+            case "JUL": return 7;
+            case "AUG": return 8;
+            case "SEP": return 9;
+            case "OCT": return 10;
+            case "NOV": return 11;
+            case "DEC": return 12;
+            default: return 1; // Default to JAN
+        }
     }
 
     private String getMonthFormat(int month)
@@ -171,19 +226,30 @@ public class ChangeUserInformationFragment extends Fragment {
         return "JAN";
     }
 
+    private String makeDateString(int day, int month, int year)
+    {
+        return getMonthFormat(month) + " " + day + " " + year;
+    }
+
+
     public void openDatePicker(View view)
     {
         datePickerDialog.show();
     }
 
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 
-
-//    private boolean isInputValid() {
-//        // Example validation logic
-//        return !nameEditText.getText().toString().isEmpty()
-//                && !genderEditText.getText().toString().isEmpty()
-//                && !dobEditText.getText().toString().isEmpty()
-//                && !addressEditText.getText().toString().isEmpty()
-//                && !phoneEditText.getText().toString().isEmpty();
-//    }
+    private boolean isInputValid() {
+        // Example validation logic
+        return !nameEditText.getText().toString().isEmpty()
+                && !genderButton.getText().toString().isEmpty()
+                && !addressEditText.getText().toString().isEmpty()
+                && !phoneEditText.getText().toString().isEmpty()
+                && !dateButton.getText().toString().isEmpty();
+    }
 }
