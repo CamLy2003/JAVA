@@ -112,9 +112,8 @@
                     <LinearLayout
                         android:layout_width="150dp"
                         android:layout_height="match_parent"
-                        android:layout_marginStart="20dp"
                         android:background="@drawable/account_black_border"
-                        android:layout_marginEnd="20dp">
+                        >
                         <Button
                             android:id="@+id/ChangeUserInfo"
                             android:layout_width="match_parent"
