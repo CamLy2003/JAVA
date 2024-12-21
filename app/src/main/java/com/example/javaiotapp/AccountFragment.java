@@ -31,6 +31,8 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -93,7 +95,10 @@ public class AccountFragment extends Fragment {
             displayCarStatus();
         });
 
-        logoutButton.setOnClickListener(v -> showNotification());
+
+
+
+        logoutButton.setOnClickListener(v -> Logout());
 
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -184,22 +189,10 @@ public class AccountFragment extends Fragment {
         adapter.notifyDataSetChanged(); // Notify adapter of changes
     }
 
-    private void showNotification() {
-        Context context = requireContext();
-        Intent intent = new Intent(context, MainActivity.class); // Target activity hosting the fragment
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "my_channel_id")
-                .setSmallIcon(R.drawable.account_logout_icon)
-                .setContentTitle("Logout Notification")
-                .setContentText("You have clicked the logout button.")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, builder.build());
+    private void Logout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(AccountFragment.this.getContext(), Login.class);
+        startActivity(intent);
     }
 
     private void createNotificationChannel() {
