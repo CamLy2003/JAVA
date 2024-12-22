@@ -140,10 +140,14 @@ public class AccountFragment extends Fragment {
         adapter = new UserInfoAdapter(userList);
         recyclerView.setAdapter(adapter);
 
+
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                 DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
 
+        recyclerView.post(() -> {
+            adapter.notifyDataSetChanged();
+        });
 
         requireActivity().getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             int backStackCount = requireActivity().getSupportFragmentManager().getBackStackEntryCount();
