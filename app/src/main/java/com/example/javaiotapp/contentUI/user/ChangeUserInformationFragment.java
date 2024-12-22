@@ -1,4 +1,4 @@
-package com.example.javaiotapp;
+package com.example.javaiotapp.contentUI.user;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -14,6 +14,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import com.example.javaiotapp.R;
+import com.example.javaiotapp.contentUI.AccountFragment;
+import com.example.javaiotapp.contentUI.MainActivity;
 
 import java.util.Calendar;
 
@@ -113,7 +117,7 @@ public class ChangeUserInformationFragment extends Fragment {
 
     private void chooseGender() {
 
-        Gender []genderOption = {Gender.Male, Gender.Female, Gender.Other};
+        Gender[]genderOption = {Gender.Male, Gender.Female, Gender.Other};
 
         String[] genderNames = new String[genderOption.length];
         for (int i = 0; i < genderOption.length; i++) {

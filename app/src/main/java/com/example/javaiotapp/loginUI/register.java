@@ -1,4 +1,4 @@
-package com.example.javaiotapp;
+package com.example.javaiotapp.loginUI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.javaiotapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -49,6 +50,16 @@ public class register extends AppCompatActivity {
     private void register() {
         String emailRegisterNew = Email_register.getText().toString().trim();
         String passwordRegisterNew = Password_register.getText().toString().trim();
+
+        //Check empty Email and Password
+        if (emailRegisterNew.isEmpty()) {
+            Toast.makeText(register.this, "Email không được để trống", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (passwordRegisterNew.isEmpty()) {
+            Toast.makeText(register.this, "Mật khẩu không được để trống", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword(emailRegisterNew, passwordRegisterNew)

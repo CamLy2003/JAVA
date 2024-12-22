@@ -1,44 +1,39 @@
-package com.example.javaiotapp;
+package com.example.javaiotapp.contentUI;
 
-import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.os.Bundle;
 
-import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.javaiotapp.R;
+import com.example.javaiotapp.contentUI.car.CarInformation;
+import com.example.javaiotapp.contentUI.car.CarStatusFragment;
+import com.example.javaiotapp.contentUI.user.ChangeUserInformationFragment;
+import com.example.javaiotapp.contentUI.user.Gender;
+import com.example.javaiotapp.contentUI.user.UserInfo;
+import com.example.javaiotapp.contentUI.user.UserInfoAdapter;
+import com.example.javaiotapp.contentUI.user.UserInformation;
+import com.example.javaiotapp.loginUI.Login;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class AccountFragment extends Fragment {

@@ -1,4 +1,4 @@
-package com.example.javaiotapp;
+package com.example.javaiotapp.loginUI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.javaiotapp.contentUI.MainActivity;
+import com.example.javaiotapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -24,15 +26,13 @@ public class Login extends AppCompatActivity {
 
      private FirebaseAuth mAuth;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        Email = findViewById(R.id.Emaail);
+        Email = findViewById(R.id.Email);
         Password = findViewById(R.id.Password);
         Button_login = findViewById(R.id.Button_login);
         Button_NewAccount = findViewById(R.id.Register);

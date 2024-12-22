@@ -1,4 +1,5 @@
-package com.example.javaiotapp;
+package com.example.javaiotapp.contentUI;
+import com.example.javaiotapp.R;
 import com.example.javaiotapp.db.slotsMap;
 
 import android.os.Bundle;
