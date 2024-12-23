@@ -46,4 +46,12 @@ public class UserInformation {
     public void setSex(Gender sex) {
         this.sex = sex;
     }
+
+    public String toString() {
+        return "UserInformation{" +
+                "name='" + name + '\'' +
+                ", date_of_birth='" + date_of_birth + '\'' +
+                ", address='" + address + '\'' +
+                ", phone_number='" + phone_number + '\'';
+    }
 }

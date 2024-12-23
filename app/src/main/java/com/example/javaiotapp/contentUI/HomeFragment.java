@@ -21,6 +21,8 @@ public class HomeFragment extends Fragment {
 
     private TextView textView;
     private String userName = "LongLe7184";  //will be replace by the log-in info
+
+
     private Handler handler = new Handler();
     private int i = 0;
 

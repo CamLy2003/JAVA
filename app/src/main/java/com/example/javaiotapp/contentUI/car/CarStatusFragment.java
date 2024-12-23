@@ -34,7 +34,7 @@ public class CarStatusFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private TextView carBeginDateText, carEndDateText, carBranchText, carDayText;
+    private TextView carBeginDateText, carEndDateText, carBranchText, carDayText, carLicensePlateText;
 
     private ImageButton backButton;
     private static CarInformation carInfor;
@@ -80,10 +80,12 @@ public class CarStatusFragment extends Fragment {
         carBeginDateText = view.findViewById(R.id.carBeginDate);
         carEndDateText = view.findViewById(R.id.carExpirationDate);
         carBranchText = view.findViewById(R.id.carBanchName);
+        carLicensePlateText = view.findViewById(R.id.carLicensePlate);
 
         carBeginDateText.setText(carInfor.getBeginDate());
         carEndDateText.setText(carInfor.getEndDate());
         carBranchText.setText(carInfor.getBrand());
+        carLicensePlateText.setText(carInfor.getLicensePlate());
 
         //Set day to due
         String today = getTodaysDate();

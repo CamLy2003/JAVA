@@ -1,9 +1,11 @@
 package com.example.javaiotapp.contentUI.car;
 
+import androidx.annotation.NonNull;
+
 public class CarInformation {
     private String brand;
     private String beginDate;
-    private String description;
+    private String LicensePlate;
     private String endDate;
 
     public void setEndDate(String endDate) {
@@ -18,8 +20,8 @@ public class CarInformation {
         this.brand = brand;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setLicensePlate(String LicensePlate) {
+        this.LicensePlate = LicensePlate;
     }
 
     public String getBeginDate() {
@@ -30,21 +32,31 @@ public class CarInformation {
         return brand;
     }
 
-    public String getDescription() {
-        return description;
+    public String getLicensePlate() {
+        return LicensePlate;
     }
     public String getEndDate() {
         return endDate;
     }
 
-    public CarInformation(String brand, String beginDate, String description, String endDate) {
+    public CarInformation(String brand, String beginDate, String LicensePlate, String endDate) {
         this.brand = brand;
         this.beginDate = beginDate;
-        this.description = description;
+        this.LicensePlate = LicensePlate;
         this.endDate = endDate;
     }
 
     public CarInformation() {
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "CarInformation{" +
+                "brand='" + brand + '\'' +
+                ", beginDate='" + beginDate + '\'' +
+                ", LicensePlate='" + LicensePlate + '\'' +
+                ", endDate='" + endDate + '\'';
     }
 }
 

@@ -77,73 +77,30 @@ public class AccountFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-        Button logoutButton = view.findViewById(R.id.ExitButton);
-        Button changeUserInfoButton = view.findViewById(R.id.ChangeUserInfo);
-        Button carStatusButton  = view.findViewById(R.id.CarStatus);
+        // Initialize UI components
+        initializeButtons(view);
+        initializeRecyclerView(view);
 
+        // Initialize data
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if (mainActivity != null) {
+            // Start with loading state
+            setupLoadingState(view);
 
-        changeUserInfoButton.setOnClickListener(v -> {
-            changeUserInformation();
-        });
-
-        carStatusButton.setOnClickListener(v -> {
-            displayCarStatus();
-        });
-
-
-
-
-        logoutButton.setOnClickListener(v -> Logout());
-
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        // Create a list of user information
-        userInfor = new UserInformation();
-        userInfor.setName("Nguyen Dang Duy Manh");
-        userInfor.setSex(Gender.Male);
-        userInfor.setDate_of_birth("DEC 11 2003");
-        userInfor.setAddress("407 - B5");
-        userInfor.setPhone_number("0832073486");
-
-        //Create a list of car information
-        carInfor = new CarInformation();
-        carInfor.setBeginDate("JAN 1 2023");
-        carInfor.setEndDate("DEC 12 2025");
-        carInfor.setBrand("Toyota");
-        carInfor.setDescription("Car00001");
-
-        userList = new ArrayList<>();
-        userList.add(new UserInfo("Name", userInfor.getName()));
-        userList.add(new UserInfo("Gender", userInfor.getSex().toString()));
-        userList.add(new UserInfo("Date of birth", userInfor.getDate_of_birth()));
-        userList.add(new UserInfo("Address", userInfor.getAddress()));
-        userList.add(new UserInfo("Phone Number", userInfor.getPhone_number()));
-
-        String gender = userList.get(1).getValue();
-        ImageView boy_image = view.findViewById(R.id.account_avatar_boy);
-        ImageView girl_image = view.findViewById(R.id.account_avatar_girl);
-        if (gender.equalsIgnoreCase("male")) {
-            boy_image.setVisibility(View.VISIBLE);
-            girl_image.setVisibility(View.GONE);
-        } else if (gender.equalsIgnoreCase("female")) {
-            boy_image.setVisibility(View.GONE);
-            girl_image.setVisibility(View.VISIBLE);
+            // If data is already loaded, update immediately
+            if (mainActivity.isInitialDataLoaded()) {
+                carInfor = mainActivity.getCarInfor();
+                userInfor = mainActivity.getUserInfor();
+                updateUIWithData(view);
+            }
         }
 
-        // Set the adapter
-        adapter = new UserInfoAdapter(userList);
-        recyclerView.setAdapter(adapter);
+        // Set up back stack listener
+        setupBackStackListener();
 
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(dividerItemDecoration);
-
-        recyclerView.post(() -> {
-            adapter.notifyDataSetChanged();
-        });
-
+        return view;
+    }
+    private void setupBackStackListener() {
         requireActivity().getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             int backStackCount = requireActivity().getSupportFragmentManager().getBackStackEntryCount();
             Log.d("AccountFragment", "Back stack changed. Count: " + backStackCount);
@@ -155,8 +112,33 @@ public class AccountFragment extends Fragment {
                 );
             }
         });
+    }
 
-        return view;
+    private void initializeButtons(View view) {
+        Button logoutButton = view.findViewById(R.id.ExitButton);
+        Button changeUserInfoButton = view.findViewById(R.id.ChangeUserInfo);
+        Button carStatusButton = view.findViewById(R.id.CarStatus);
+
+        changeUserInfoButton.setOnClickListener(v -> changeUserInformation());
+        carStatusButton.setOnClickListener(v -> displayCarStatus());
+        logoutButton.setOnClickListener(v -> Logout());
+    }
+
+    private void initializeRecyclerView(View view) {
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Add divider
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL
+        );
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
+        // Initialize adapter with empty list
+        userList = new ArrayList<>();
+        adapter = new UserInfoAdapter(userList);
+        recyclerView.setAdapter(adapter);
     }
 
     public void updateUserInfo(UserInformation userInfor) {
@@ -260,6 +242,74 @@ public class AccountFragment extends Fragment {
                 ", Fragment container visibility: " + fragmentContainer.getVisibility());
     }
 
+    private void setupLoadingState(View view) {
+        userList = new ArrayList<>();
+        userList.add(new UserInfo("Name", "Loading..."));
+        userList.add(new UserInfo("Gender", "Loading..."));
+        userList.add(new UserInfo("Date of birth", "Loading..."));
+        userList.add(new UserInfo("Address", "Loading..."));
+        userList.add(new UserInfo("Phone Number", "Loading..."));
+
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new UserInfoAdapter(userList);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void updateUIWithData(View view) {
+        if (userInfor != null) {
+            userList.clear();
+            userList.addAll(createUserInfoList(userInfor));
+            adapter.notifyDataSetChanged();
+
+            // Update avatar visibility
+            updateAvatarVisibility(view);
+        }
+    }
+
+
+
+    private List<UserInfo> createUserInfoList(UserInformation userInfor) {
+        List<UserInfo> list = new ArrayList<>();
+        list.add(new UserInfo("Name", getValueOrDefault(userInfor.getName(), "Not Set")));
+
+        // Safely handle gender
+        Gender gender = userInfor.getSex();
+        String genderStr = gender != null ? gender.toString() : "Not Set";
+        list.add(new UserInfo("Gender", genderStr));
+
+        list.add(new UserInfo("Date of birth", getValueOrDefault(userInfor.getDate_of_birth(), "Not Set")));
+        list.add(new UserInfo("Address", getValueOrDefault(userInfor.getAddress(), "Not Set")));
+        list.add(new UserInfo("Phone Number", getValueOrDefault(userInfor.getPhone_number(), "Not Set")));
+
+        return list;
+    }
+    private void updateAvatarVisibility(View view) {
+        ImageView boy_image = view.findViewById(R.id.account_avatar_boy);
+        ImageView girl_image = view.findViewById(R.id.account_avatar_girl);
+
+        if (userInfor != null && userInfor.getSex() != null) {
+            String gender = userInfor.getSex().toString();
+            if (gender.equalsIgnoreCase("male")) {
+                boy_image.setVisibility(View.VISIBLE);
+                girl_image.setVisibility(View.GONE);
+            } else if (gender.equalsIgnoreCase("female")) {
+                boy_image.setVisibility(View.GONE);
+                girl_image.setVisibility(View.VISIBLE);
+            } else {
+                // Default case or unknown gender
+                boy_image.setVisibility(View.GONE);
+                girl_image.setVisibility(View.GONE);
+            }
+        } else {
+            // If userInfor or gender is null, hide both avatars
+            boy_image.setVisibility(View.GONE);
+            girl_image.setVisibility(View.GONE);
+        }
+    }
+    private String getValueOrDefault(String value, String defaultValue) {
+        return value != null && !value.trim().isEmpty() ? value : defaultValue;
+    }
     public void updateCarInfo(CarInformation carInfor) {
         this.carInfor = carInfor;
     }
