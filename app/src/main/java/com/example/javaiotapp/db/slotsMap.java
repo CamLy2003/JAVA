@@ -15,8 +15,15 @@ public class slotsMap {
         myMap.put("A6", "full");
         myMap.put("A7", "full");
         myMap.put("A8", "empty");
-        myMap.put("A9", "empty");
-        myMap.put("A10", "full");
+
+        myMap.put("B1", "empty");
+        myMap.put("B2", "full");
+        myMap.put("B3", "empty");
+        myMap.put("B4", "full");
+        myMap.put("B5", "empty");
+        myMap.put("B6", "empty");
+        myMap.put("B7", "empty");
+        myMap.put("B8", "full");
     }
 
     public HashMap<String, String> getMap() {
