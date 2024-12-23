@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +21,11 @@ public class HomeFragment extends Fragment {
     private int currentVideoPosition = 0;
 
     private TextView textView;
-    private String userName = "LongLe7184";  //will be replace by the log-in info
+    private String userName = "Guest";  //will be replace by the log-in info
 
 
     private Handler handler = new Handler();
-    private int i = 0;
+    static private int i = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -32,8 +33,6 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         videoView = view.findViewById(R.id.videoViewBg);
         textView = view.findViewById(R.id.welcomeTxtView);
-
-        welcomeLineWithAnimation("Welcome \""+ userName + "\"!");
 
         String videoPath = "android.resource://" + getActivity().getPackageName() + "/" + R.raw.bg;
         Uri uri = Uri.parse(videoPath);
@@ -78,11 +77,21 @@ public class HomeFragment extends Fragment {
             @Override
             public void run() {
                 if(i < textToAnimate.length()) {
-                    textView.setText(textView.getText().toString() + textToAnimate.charAt(i));
+                    textView.append(String.valueOf(textToAnimate.charAt(i)));
                     i++;
                     handler.postDelayed(this, 75);
                 }
             }
         }, 150);
+    }
+
+    public void updateNameInfo(String name) {
+        userName = getNameOnly(name);
+        welcomeLineWithAnimation("Welcome \""+ userName + "\"!");
+    }
+
+    private String getNameOnly(String fullName) {
+        String[] parts = fullName.split(" ");
+        return parts[parts.length - 1].trim();
     }
 }

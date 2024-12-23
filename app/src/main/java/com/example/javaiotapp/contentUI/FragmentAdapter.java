@@ -57,6 +57,9 @@ public class FragmentAdapter extends FragmentStateAdapter {
      * Retrieve the specific AccountFragment instance.
      */
     public AccountFragment getAccountFragment() {
-        return (AccountFragment) fragmentMap.get(2); // Assuming AccountFragment is at position 2
+        return (AccountFragment) fragmentMap.get(2); //AccountFragment is at position 2
+    }
+    public HomeFragment getHomeFragment() {
+        return (HomeFragment) fragmentMap.get(0);   //HomeFragment is at position 0
     }
 }

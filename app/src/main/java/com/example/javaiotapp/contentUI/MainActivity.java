@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.example.javaiotapp.R;
 import com.example.javaiotapp.contentUI.car.CarInformation;
 import com.example.javaiotapp.contentUI.user.Gender;
+import com.example.javaiotapp.contentUI.user.UserInfo;
 import com.example.javaiotapp.contentUI.user.UserInformation;
 
 import com.example.javaiotapp.loginUI.register;
@@ -52,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * Get the AccountFragment instance.
-     */
+
     public AccountFragment getAccountFragment() {
         return fragmentAdapter.getAccountFragment();
     }
@@ -70,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
     private void updateUserInfo(DocumentSnapshot snapshot) {
         userInfor.setName(getFieldWithDefault(snapshot, "name", "Unknown"));
         userInfor.setSex(getGenderWithDefault(snapshot, "gender", Gender.Male));
-        userInfor.setDate_of_birth(getFieldWithDefault(snapshot, "dob", ""));
-        userInfor.setAddress(getFieldWithDefault(snapshot, "address", ""));
-        userInfor.setPhone_number(getFieldWithDefault(snapshot, "phoneNum", ""));
+        userInfor.setDate_of_birth(getFieldWithDefault(snapshot, "dob", "Unknown"));
+        userInfor.setAddress(getFieldWithDefault(snapshot, "address", "Unknown"));
+        userInfor.setPhone_number(getFieldWithDefault(snapshot, "phoneNum", "Unknown"));
     }
 
     private void updateCarInfo(DocumentSnapshot snapshot) {
@@ -98,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateToRegistration() {
+        Toast.makeText(MainActivity.this, "Registration personal information required", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, registerUserInformation.class);
         startActivity(intent);
         finish();
@@ -129,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
                 if (accountFragment != null) {
                     accountFragment.updateUserInfo(userInfor);
                     accountFragment.updateCarInfo(carInfor);
+                }
+
+                // Update the HomeFragment if it exists
+                HomeFragment homeFragment = fragmentAdapter.getHomeFragment();
+                if (homeFragment != null) {
+                    homeFragment.updateNameInfo(userInfor.getName());
                 }
 
                 Log.d("Firestore", "Data loaded successfully");

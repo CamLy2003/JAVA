@@ -2,6 +2,7 @@ package com.example.javaiotapp.contentUI;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -20,6 +21,7 @@ import android.widget.ImageView;
 
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.javaiotapp.R;
 import com.example.javaiotapp.contentUI.car.CarInformation;
@@ -30,13 +32,23 @@ import com.example.javaiotapp.contentUI.user.UserInfo;
 import com.example.javaiotapp.contentUI.user.UserInfoAdapter;
 import com.example.javaiotapp.contentUI.user.UserInformation;
 import com.example.javaiotapp.loginUI.Login;
+import com.example.javaiotapp.loginUI.registerCarInformation;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class AccountFragment extends Fragment {
+    private FirebaseAuth mAuth;
+
+    private FirebaseFirestore db;
     List<UserInfo> userList;
 
     CarInformation carInfor;
@@ -48,6 +60,7 @@ public class AccountFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private String mParam1;
     private String mParam2;
+    private String userUID;
 
     public AccountFragment() {
         // Required empty public constructor
@@ -77,8 +90,10 @@ public class AccountFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-        // Initialize UI components
+        //Change User Button, Car Status Button, LogOut Button
         initializeButtons(view);
+
+        //Recycler View for display User Information
         initializeRecyclerView(view);
 
         // Initialize data
@@ -87,7 +102,6 @@ public class AccountFragment extends Fragment {
             // Start with loading state
             setupLoadingState(view);
 
-            // If data is already loaded, update immediately
             if (mainActivity.isInitialDataLoaded()) {
                 carInfor = mainActivity.getCarInfor();
                 userInfor = mainActivity.getUserInfor();
@@ -100,25 +114,14 @@ public class AccountFragment extends Fragment {
 
         return view;
     }
-    private void setupBackStackListener() {
-        requireActivity().getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            int backStackCount = requireActivity().getSupportFragmentManager().getBackStackEntryCount();
-            Log.d("AccountFragment", "Back stack changed. Count: " + backStackCount);
-            if (backStackCount == 0) {
-                toggleContainerVisibility(
-                        requireView().findViewById(R.id.fragment_account),
-                        requireView().findViewById(R.id.fragment_account_container),
-                        false
-                );
-            }
-        });
-    }
 
     private void initializeButtons(View view) {
+        //Find view
         Button logoutButton = view.findViewById(R.id.ExitButton);
         Button changeUserInfoButton = view.findViewById(R.id.ChangeUserInfo);
         Button carStatusButton = view.findViewById(R.id.CarStatus);
 
+        //Set listener
         changeUserInfoButton.setOnClickListener(v -> changeUserInformation());
         carStatusButton.setOnClickListener(v -> displayCarStatus());
         logoutButton.setOnClickListener(v -> Logout());
@@ -139,6 +142,66 @@ public class AccountFragment extends Fragment {
         userList = new ArrayList<>();
         adapter = new UserInfoAdapter(userList);
         recyclerView.setAdapter(adapter);
+    }
+
+    private void changeUserInformation() {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        View staticContent = requireView().findViewById(R.id.fragment_account);
+        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
+
+        toggleContainerVisibility(staticContent, fragmentContainer, true);
+
+        // Use newInstance to pass user information
+        ChangeUserInformationFragment changeFragment = ChangeUserInformationFragment.newInstance(
+                userInfor
+        );
+
+        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT")
+                .addToBackStack(null) // Add to back stack
+                .commit();
+
+        Log.d("AccountFragment", "Navigated to ChangeUserInformationFragment.");
+    }
+    private void displayCarStatus() {
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        View staticContent = requireView().findViewById(R.id.fragment_account);
+        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
+
+        toggleContainerVisibility(staticContent, fragmentContainer, true);
+
+        CarStatusFragment changeFragment = CarStatusFragment.newInstance(
+                carInfor
+        );
+
+        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
+                .addToBackStack(null) // Add to back stack
+                .commit();
+
+        Log.d("AccountFragment", "Navigated to CarStatusFragment.");
+    }
+
+    private void Logout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(AccountFragment.this.getContext(), Login.class);
+        startActivity(intent);
+    }
+
+    private void setupBackStackListener() {
+        requireActivity().getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            int backStackCount = requireActivity().getSupportFragmentManager().getBackStackEntryCount();
+            Log.d("AccountFragment", "Back stack changed. Count: " + backStackCount);
+            if (backStackCount == 0) {
+                toggleContainerVisibility(
+                        requireView().findViewById(R.id.fragment_account),
+                        requireView().findViewById(R.id.fragment_account_container),
+                        false
+                );
+            }
+        });
     }
 
     public void updateUserInfo(UserInformation userInfor) {
@@ -166,15 +229,56 @@ public class AccountFragment extends Fragment {
             girl_image.setVisibility(View.VISIBLE);
         }
 
+        updateFireBaseData();
 
         adapter.notifyDataSetChanged(); // Notify adapter of changes
     }
 
-    private void Logout() {
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(AccountFragment.this.getContext(), Login.class);
-        startActivity(intent);
+    private void updateFireBaseData() {
+        if (userInfor != null && carInfor != null) {
+            initilizeFireBase();
+            Map<String, Object> user = createHashMap();
+
+            DocumentReference userRef = db.collection("Users").document(userUID);
+
+            userRef.set(user)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void documentReference) {
+                            // Show a success message
+                            Toast.makeText(requireContext(), "Information added successfully", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // Handle failure and display error message
+                            Toast.makeText(requireContext(), "Error adding car information: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
+
+    private  Map<String, Object> createHashMap() {
+        Map<String, Object> user = new HashMap<>();
+        user.put("name", userInfor.getName().trim());
+        user.put("dob", userInfor.getDate_of_birth().trim());
+        user.put("gender", userInfor.getSex().toString().trim());
+        user.put("address", userInfor.getAddress().trim());
+        user.put("phoneNum", userInfor.getPhone_number().trim());
+        user.put("carBeginDate", carInfor.getBeginDate().trim());
+        user.put("carEndDate", carInfor.getEndDate().trim());
+        user.put("carLicensePlate", carInfor.getLicensePlate().trim());
+        user.put("carBranch", carInfor.getBrand().trim());
+        return user;
+    }
+
+    private void initilizeFireBase() {
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
 
     private void createNotificationChannel() {
         String name = "My Notification Channel";
@@ -189,47 +293,6 @@ public class AccountFragment extends Fragment {
         }
     }
 
-    private void changeUserInformation() {
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-        View staticContent = requireView().findViewById(R.id.fragment_account);
-        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
-
-        toggleContainerVisibility(staticContent, fragmentContainer, true);
-
-        // Use newInstance to pass user information
-        ChangeUserInformationFragment changeFragment = ChangeUserInformationFragment.newInstance(
-                userInfor
-        );
-
-        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
-                .addToBackStack(null) // Add to back stack
-                .commit();
-
-        Log.d("AccountFragment", "Navigated to ChangeUserInformationFragment.");
-    }
-
-    private void displayCarStatus() {
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-        View staticContent = requireView().findViewById(R.id.fragment_account);
-        View fragmentContainer = requireView().findViewById(R.id.fragment_account_container);
-
-        toggleContainerVisibility(staticContent, fragmentContainer, true);
-
-        CarStatusFragment changeFragment = CarStatusFragment.newInstance(
-                carInfor
-        );
-
-        transaction.replace(R.id.fragment_account_container, changeFragment, "ACCOUNT_FRAGMENT") // Use tag for ChangeUserInformationFragment
-                .addToBackStack(null) // Add to back stack
-                .commit();
-
-        Log.d("AccountFragment", "Navigated to CarStatusFragment.");
-
-    }
 
     public void toggleContainerVisibility(View staticContent, View fragmentContainer, boolean showFragment) {
         if (staticContent == null || fragmentContainer == null) {
@@ -272,12 +335,9 @@ public class AccountFragment extends Fragment {
     private List<UserInfo> createUserInfoList(UserInformation userInfor) {
         List<UserInfo> list = new ArrayList<>();
         list.add(new UserInfo("Name", getValueOrDefault(userInfor.getName(), "Not Set")));
-
-        // Safely handle gender
         Gender gender = userInfor.getSex();
         String genderStr = gender != null ? gender.toString() : "Not Set";
         list.add(new UserInfo("Gender", genderStr));
-
         list.add(new UserInfo("Date of birth", getValueOrDefault(userInfor.getDate_of_birth(), "Not Set")));
         list.add(new UserInfo("Address", getValueOrDefault(userInfor.getAddress(), "Not Set")));
         list.add(new UserInfo("Phone Number", getValueOrDefault(userInfor.getPhone_number(), "Not Set")));

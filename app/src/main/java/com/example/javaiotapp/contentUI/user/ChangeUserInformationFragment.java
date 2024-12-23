@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,8 @@ public class ChangeUserInformationFragment extends Fragment {
     private EditText nameEditText, addressEditText, phoneEditText;
     private ImageButton backButton;
 
+    private boolean isNeedToUpdate = false;
+
     public ChangeUserInformationFragment() {
         // Required empty public constructor
     }
@@ -59,6 +62,7 @@ public class ChangeUserInformationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_change_user_information, container, false);
 
+        isNeedToUpdate = false;
 
         initDatePicker();
 
@@ -70,7 +74,22 @@ public class ChangeUserInformationFragment extends Fragment {
         phoneEditText = view.findViewById(R.id.phoneEditText);
         backButton = view.findViewById(R.id.backAccountFragmentButton);
 
+        //SetFilter to limit input number in java
+        setFilter();
+
         // Set initial data if arguments are present
+        setInitData();
+
+        genderButton.setOnClickListener(v -> chooseGender());
+
+        dateButton.setOnClickListener(v -> openDatePicker(v));
+
+        backButton.setOnClickListener(v -> backToAccountFragment(v));
+
+        return view;
+    }
+
+    private void setInitData() {
         if (getArguments() != null) {
             nameEditText.setText(getArguments().getString(ARG_NAME, ""));
             genderButton.setText(getArguments().getString(ARG_GENDER, ""));
@@ -79,14 +98,19 @@ public class ChangeUserInformationFragment extends Fragment {
             addressEditText.setText(getArguments().getString(ARG_ADDRESS, ""));
             phoneEditText.setText(getArguments().getString(ARG_PHONE, ""));
         }
+    }
 
-        genderButton.setOnClickListener(v -> chooseGender());
+    private void setFilter() {
+        nameEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30)});
+        phoneEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
+        addressEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30)});
+    }
 
-        dateButton.setOnClickListener(v -> openDatePicker(v));
-
-        backButton.setOnClickListener(v -> {
+    private void backToAccountFragment(View v) {
+        {
             hideKeyboard(v); // Hide the keyboard
             if (isInputValid()) {
+                isNeedToUpdate = true;
                 MainActivity mainActivity = (MainActivity) requireActivity();
                 AccountFragment accountFragment = mainActivity.getAccountFragment();
 
@@ -99,7 +123,7 @@ public class ChangeUserInformationFragment extends Fragment {
 
                 if (accountFragment != null) {
                     accountFragment.updateUserInfo(
-                        userInfor
+                            userInfor
                     );
                 } else {
                     Log.e("ChangeUserInfoFragment", "AccountFragment reference is null!");
@@ -107,14 +131,8 @@ public class ChangeUserInformationFragment extends Fragment {
 
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
-        });
-
-
-
-
-        return view;
+        }
     }
-
     private void chooseGender() {
 
         Gender[]genderOption = {Gender.Male, Gender.Female, Gender.Other};
@@ -255,5 +273,9 @@ public class ChangeUserInformationFragment extends Fragment {
                 && !addressEditText.getText().toString().isEmpty()
                 && !phoneEditText.getText().toString().isEmpty()
                 && !dateButton.getText().toString().isEmpty();
+    }
+
+    public boolean getNeedToUpdate() {
+        return isNeedToUpdate;
     }
 }
