@@ -73,6 +73,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void welcomeLineWithAnimation(String textToAnimate) {
+        Log.d("WelcomLine", textToAnimate);
+        textView.setText("");
+        i = 0;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {

@@ -185,9 +185,22 @@ public class AccountFragment extends Fragment {
     }
 
     private void Logout() {
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(AccountFragment.this.getContext(), Login.class);
-        startActivity(intent);
+        mAuth.signOut();
+        db.terminate()
+                .addOnCompleteListener(task -> {
+                    FirebaseFirestore.getInstance().clearPersistence()
+                            .addOnCompleteListener(clearTask -> {
+                                // Navigate back to Login Activity
+                                Intent intent = new Intent( getContext(), Login.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                Toast.makeText(getContext(), "Signed out successfully", Toast.LENGTH_SHORT).show();
+                                getActivity().finish();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(AccountFragment.this.getContext(), "Error clearing Firestore data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 
     private void setupBackStackListener() {
